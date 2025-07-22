@@ -5,6 +5,10 @@ import List from "@editorjs/list";
 import Paragraph from "@editorjs/paragraph";
 import Quote from "@editorjs/quote";
 import Code from "@editorjs/code";
+import Checklist from "@editorjs/checklist";
+import Delimiter from "@editorjs/delimiter";
+import Marker from "@editorjs/marker";
+import InlineCode from "@editorjs/inline-code";
 
 interface EditorJSComponentProps {
   data?: OutputData;
@@ -49,14 +53,17 @@ const EditorJSComponent = forwardRef<EditorJSRef, EditorJSComponentProps>(
                 class: Header,
                 config: {
                   placeholder: "Enter a header",
-                  levels: [1, 2, 3],
+                  levels: [1, 2, 3, 4, 5, 6],
                   defaultLevel: 1
-                }
+                },
+                shortcut: "CMD+SHIFT+H"
               },
               paragraph: {
                 class: Paragraph,
+                inlineToolbar: true,
                 config: {
-                  placeholder: placeholder
+                  placeholder: placeholder,
+                  preserveBlank: true
                 }
               },
               list: {
@@ -64,7 +71,12 @@ const EditorJSComponent = forwardRef<EditorJSRef, EditorJSComponentProps>(
                 inlineToolbar: true,
                 config: {
                   defaultStyle: "unordered"
-                }
+                },
+                shortcut: "CMD+SHIFT+L"
+              },
+              checklist: {
+                class: Checklist,
+                inlineToolbar: true
               },
               quote: {
                 class: Quote,
@@ -72,13 +84,24 @@ const EditorJSComponent = forwardRef<EditorJSRef, EditorJSComponentProps>(
                 config: {
                   quotePlaceholder: "Enter a quote",
                   captionPlaceholder: "Quote's author"
-                }
+                },
+                shortcut: "CMD+SHIFT+O"
               },
               code: {
                 class: Code,
                 config: {
                   placeholder: "Enter code here..."
-                }
+                },
+                shortcut: "CMD+SHIFT+C"
+              },
+              delimiter: Delimiter,
+              marker: {
+                class: Marker,
+                shortcut: "CMD+SHIFT+M"
+              },
+              inlineCode: {
+                class: InlineCode,
+                shortcut: "CMD+SHIFT+`"
               }
             },
             data: data || {
