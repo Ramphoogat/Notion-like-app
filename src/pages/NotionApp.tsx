@@ -1,7 +1,6 @@
-import { useState, useRef } from "react";
-import { OutputData } from "@editorjs/editorjs";
+import { useState } from "react";
 import { NotionSidebar } from "@/components/NotionSidebar";
-import EditorJSComponent, { EditorJSRef } from "@/components/EditorJSComponent";
+import { SimpleEditor } from "@/components/SimpleEditor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Settings, Share2, MoreHorizontal, Edit3 } from "lucide-react";
@@ -10,7 +9,7 @@ interface Page {
   id: string;
   title: string;
   icon?: string;
-  editorData: OutputData;
+  content: string;
   children?: Page[];
 }
 
@@ -19,76 +18,22 @@ const initialPages: Page[] = [
     id: "1",
     title: "Getting Started",
     icon: "🚀",
-    editorData: {
-      time: Date.now(),
-      blocks: [
-        {
-          type: "header",
-          data: {
-            text: "Welcome to Your Notion Workspace",
-            level: 1
-          }
-        },
-        {
-          type: "paragraph",
-          data: {
-            text: "This is your personal workspace where you can organize thoughts, write notes, and manage projects. Start by creating new pages or editing this one."
-          }
-        },
-        {
-          type: "header",
-          data: {
-            text: "Getting Started",
-            level: 2
-          }
-        },
-        {
-          type: "list",
-          data: {
-            style: "unordered",
-            items: [
-              "Click anywhere to start editing",
-              "Use different block types like headings, lists, and paragraphs",
-              "Create new pages from the sidebar"
-            ]
-          }
-        }
-      ],
-      version: "2.30.8"
-    }
+    content: "# Welcome to Your Notion Workspace\n\nThis is your personal workspace where you can organize thoughts, write notes, and manage projects. Start by creating new pages or editing this one.\n\n## Getting Started\n\n- Click anywhere to start editing\n- Use different block types like headings, lists, and paragraphs\n- Create new pages from the sidebar"
   },
   {
     id: "2",
     title: "Quick Notes",
     icon: "📝",
-    editorData: {
-      time: Date.now(),
-      blocks: [
-        {
-          type: "header",
-          data: {
-            text: "Quick Notes",
-            level: 1
-          }
-        },
-        {
-          type: "paragraph",
-          data: {
-            text: "Capture your thoughts here..."
-          }
-        }
-      ],
-      version: "2.30.8"
-    }
+    content: "# Quick Notes\n\nCapture your thoughts here..."
   }
 ];
 
 export function NotionApp() {
+  console.log("NotionApp component loading with SimpleEditor...");
   const [pages, setPages] = useState<Page[]>(initialPages);
   const [activePage, setActivePage] = useState("1");
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [tempTitle, setTempTitle] = useState("");
-  const editorRef = useRef<EditorJSRef>(null);
 
   const currentPage = pages.find(p => p.id === activePage);
 
@@ -97,28 +42,16 @@ export function NotionApp() {
       id: Date.now().toString(),
       title: "Untitled",
       icon: "📄",
-      editorData: {
-        time: Date.now(),
-        blocks: [
-          {
-            type: "header",
-            data: {
-              text: "",
-              level: 1
-            }
-          }
-        ],
-        version: "2.30.8"
-      }
+      content: "# Untitled\n\nStart writing..."
     };
     
     setPages([...pages, newPage]);
     setActivePage(newPage.id);
   };
 
-  const updatePageData = (editorData: OutputData) => {
+  const updatePageContent = (content: string) => {
     setPages(pages.map(page => 
-      page.id === activePage ? { ...page, editorData } : page
+      page.id === activePage ? { ...page, content } : page
     ));
   };
 
@@ -200,10 +133,9 @@ export function NotionApp() {
 
         {/* Editor */}
         <div className="flex-1 overflow-y-auto p-8">
-          <EditorJSComponent
-            ref={editorRef}
-            data={currentPage.editorData}
-            onChange={updatePageData}
+          <SimpleEditor
+            content={currentPage.content}
+            onChange={updatePageContent}
             placeholder="Start writing..."
           />
         </div>

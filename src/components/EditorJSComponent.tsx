@@ -21,94 +21,118 @@ const EditorJSComponent = forwardRef<EditorJSRef, EditorJSComponentProps>(
   ({ data, onChange, placeholder = "Start writing...", readOnly = false }, ref) => {
     const editorRef = useRef<EditorJS | null>(null);
     const holderRef = useRef<HTMLDivElement>(null);
+    const isInitialized = useRef(false);
 
     useImperativeHandle(ref, () => ({
       save: async () => {
         if (editorRef.current) {
-          return await editorRef.current.save();
+          try {
+            return await editorRef.current.save();
+          } catch (error) {
+            console.error("Error saving editor data:", error);
+            return { time: Date.now(), blocks: [], version: "2.30.8" };
+          }
         }
         return { time: Date.now(), blocks: [], version: "2.30.8" };
       }
     }));
 
     useEffect(() => {
-      if (!holderRef.current) return;
+      if (!holderRef.current || isInitialized.current) return;
 
-      const editor = new EditorJS({
-        holder: holderRef.current,
-        tools: {
-          header: {
-            class: Header,
-            config: {
-              placeholder: "Enter a header",
-              levels: [1, 2, 3],
-              defaultLevel: 1
-            }
-          },
-          paragraph: {
-            class: Paragraph,
-            config: {
-              placeholder: placeholder
-            }
-          },
-          list: {
-            class: List,
-            inlineToolbar: true,
-            config: {
-              defaultStyle: "unordered"
-            }
-          },
-          quote: {
-            class: Quote,
-            inlineToolbar: true,
-            config: {
-              quotePlaceholder: "Enter a quote",
-              captionPlaceholder: "Quote's author"
-            }
-          },
-          code: {
-            class: Code,
-            config: {
-              placeholder: "Enter code here..."
-            }
-          }
-        },
-        data: data || {
-          time: Date.now(),
-          blocks: [
-            {
-              type: "paragraph",
-              data: {
-                text: ""
+      const initializeEditor = async () => {
+        try {
+          const editor = new EditorJS({
+            holder: holderRef.current,
+            tools: {
+              header: {
+                class: Header,
+                config: {
+                  placeholder: "Enter a header",
+                  levels: [1, 2, 3],
+                  defaultLevel: 1
+                }
+              },
+              paragraph: {
+                class: Paragraph,
+                config: {
+                  placeholder: placeholder
+                }
+              },
+              list: {
+                class: List,
+                inlineToolbar: true,
+                config: {
+                  defaultStyle: "unordered"
+                }
+              },
+              quote: {
+                class: Quote,
+                inlineToolbar: true,
+                config: {
+                  quotePlaceholder: "Enter a quote",
+                  captionPlaceholder: "Quote's author"
+                }
+              },
+              code: {
+                class: Code,
+                config: {
+                  placeholder: "Enter code here..."
+                }
               }
-            }
-          ],
-          version: "2.30.8"
-        },
-        onChange: async () => {
-          if (onChange && editorRef.current) {
-            try {
-              const outputData = await editorRef.current.save();
-              onChange(outputData);
-            } catch (error) {
-              console.error("Saving failed:", error);
-            }
-          }
-        },
-        placeholder: placeholder,
-        readOnly: readOnly,
-        minHeight: 200
-      });
+            },
+            data: data || {
+              time: Date.now(),
+              blocks: [
+                {
+                  type: "paragraph",
+                  data: {
+                    text: ""
+                  }
+                }
+              ],
+              version: "2.30.8"
+            },
+            onChange: async () => {
+              if (onChange && editorRef.current) {
+                try {
+                  const outputData = await editorRef.current.save();
+                  onChange(outputData);
+                } catch (error) {
+                  console.error("Saving failed:", error);
+                }
+              }
+            },
+            placeholder: placeholder,
+            readOnly: readOnly,
+            minHeight: 200
+          });
 
-      editorRef.current = editor;
+          await editor.isReady;
+          editorRef.current = editor;
+          isInitialized.current = true;
+        } catch (error) {
+          console.error("Failed to initialize Editor.js:", error);
+        }
+      };
+
+      initializeEditor();
 
       return () => {
         if (editorRef.current && editorRef.current.destroy) {
           editorRef.current.destroy();
           editorRef.current = null;
+          isInitialized.current = false;
         }
       };
-    }, [data, onChange, placeholder, readOnly]);
+    }, []);
+
+    // Update data when prop changes
+    useEffect(() => {
+      if (editorRef.current && data && isInitialized.current) {
+        editorRef.current.render(data).catch(console.error);
+      }
+    }, [data]);
 
     return (
       <div className="prose max-w-none">
