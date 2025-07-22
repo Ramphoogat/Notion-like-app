@@ -52,6 +52,13 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				notion: {
+					gray: 'hsl(var(--notion-gray))',
+					'light-gray': 'hsl(var(--notion-light-gray))',
+					hover: 'hsl(var(--notion-hover))',
+					text: 'hsl(var(--notion-text))',
+					'text-light': 'hsl(var(--notion-text-light))'
+				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
